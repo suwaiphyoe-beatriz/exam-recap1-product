@@ -15,7 +15,7 @@ const Navbar = () => {
           <Link to="/products/add-product">Add Product</Link>
           <Link to="/login">Login</Link>
           <Link to="/signup">Signup</Link>
-          <button onClick={handleClick}>Log out</button>          
+          <button onClick={handleClick}>Log out</button>
         </div>
       </div>
     </nav>
