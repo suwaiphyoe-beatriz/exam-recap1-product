@@ -7,6 +7,8 @@ import Navbar from "./components/Navbar";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductPage from "./pages/ProductPage";
 import EditProductPage from "./pages/EditProductPage";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 const App = () => {
 
@@ -20,6 +22,8 @@ const App = () => {
               <Route path="/add-product" element={<AddProductPage />} />
               <Route path="/edit-product/:id" element={<EditProductPage />} />
               <Route path="/products/:id" element={<ProductPage />} /> 
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login />} />
               <Route path='*' element={<NotFoundPage />} />
             </Routes>
           </div>
