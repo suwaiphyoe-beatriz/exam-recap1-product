@@ -67,6 +67,7 @@ const ProductPage = () => {
           <p>Supplier: {product.supplier?.name}</p>
 
           <button onClick={() => onDeleteClick(product._id)}>Delete</button>
+          <button onClick={() => navigate(`/edit-product/${product._id}`)}>edit</button>
         </>
       )}
     </div>
