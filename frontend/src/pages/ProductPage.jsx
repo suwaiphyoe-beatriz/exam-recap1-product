@@ -1,17 +1,22 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const ProductPage = () => {
+const ProductPage = ({ isAuthenticated }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user ? user.token : null;
 
   const deleteProduct = async (id) => {
     try {
       const res = await fetch(`/api/products/${id}`, {
         method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+          },
       });
       if (!res.ok) {
         throw new Error("Failed to delete product");
@@ -65,9 +70,13 @@ const ProductPage = () => {
           <p>Price: ${product.price}</p>
           <p>Stock: {product.stockQuantity}</p>
           <p>Supplier: {product.supplier?.name}</p>
-
-          <button onClick={() => onDeleteClick(product._id)}>Delete</button>
-          <button onClick={() => navigate(`/edit-product/${product._id}`)}>edit</button>
+        {isAuthenticated &&(
+            <>
+            <button onClick={() => onDeleteClick(product._id)}>Delete</button>
+            <button onClick={() => navigate(`/edit-product/${product._id}`)}>edit</button>
+            </>
+        )}
+          
         </>
       )}
     </div>
