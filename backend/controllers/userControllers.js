@@ -13,31 +13,17 @@ const generateToken = (_id) => {
 // @route   POST /api/users/signup
 // @access  Public
 const signupUser = async (req, res) => {
-  const {
-    name,
-    username,
-    password,
-    phone_number,
-    gender,
-    date_of_birth,
-    membership_status,
-  } = req.body;
-  try {
-    if (
-      !name ||
-      !username ||
-      !password ||
-      !phone_number ||
-      !gender ||
-      !date_of_birth ||
-      !membership_status
-    ) {
-      res.status(400);
-      throw new Error("Please add all fields");
-    }
-    // Check if user exists
-    const userExists = await User.findOne({ username });
+  const { name, email, password, role, bio } = req.body;
 
+  try {
+    // Validate fields
+    if (!name || !email || !password || !role || !bio) {
+      res.status(400);
+      throw new Error("Please fill in all required fields");
+    }
+
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
     if (userExists) {
       res.status(400);
       throw new Error("User already exists");
@@ -50,18 +36,23 @@ const signupUser = async (req, res) => {
     // Create user
     const user = await User.create({
       name,
-      username,
+      email,
       password: hashedPassword,
-      phone_number,
-      gender,
-      date_of_birth,
-      membership_status,
+      role,
+      bio,
     });
 
     if (user) {
-      // console.log(user._id);
       const token = generateToken(user._id);
-      res.status(201).json({ username, token });
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        bio: user.bio,
+        lastLogin: user.lastLogin,
+        token,
+      });
     } else {
       res.status(400);
       throw new Error("Invalid user data");
@@ -71,28 +62,47 @@ const signupUser = async (req, res) => {
   }
 };
 
-// @desc    Authenticate a user
+// @desc    Authenticate a user (login)
 // @route   POST /api/users/login
 // @access  Public
 const loginUser = async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    // Check for user username
-    const user = await User.findOne({ username });
+  const { email, password } = req.body;
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const token = generateToken(user._id);
-      res.status(200).json({ username, token });
-    } else {
+  try {
+
+    const user = await User.findOne({ email });
+    if (!user) {
       res.status(400);
       throw new Error("Invalid credentials");
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(400);
+      throw new Error("Invalid credentials");
+    }
+
+    user.lastLogin = Date.now();
+    await user.save();
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      bio: user.bio,
+      lastLogin: user.lastLogin, 
+      token,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// @desc    Get user data
+// @desc    Get logged-in user data
 // @route   GET /api/users/me
 // @access  Private
 const getMe = async (req, res) => {
